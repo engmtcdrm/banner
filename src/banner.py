@@ -68,12 +68,8 @@ class Banner:
     def _side_widths(self, text: str):
         text_len = len(text)
 
-        print('text_len:', text_len)
-
         left_width = int((self.width - text_len - 2) / 2)
         right_width = left_width
-
-        print(left_width)
 
         if (self.width - text_len - 2) % 2:
             right_width += 1
