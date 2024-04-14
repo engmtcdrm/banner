@@ -1,4 +1,4 @@
-from proem import Proem
+from src.proem import Proem
 
 p = Proem(app_nm = 'test-app', flavor_text='this is my flavor', version='v1.0.0')
 

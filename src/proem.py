@@ -1,3 +1,6 @@
+"""
+A class to create a banner of information for a command line application.
+"""
 import math
 
 from colorama import Fore, just_fix_windows_console
@@ -6,7 +9,7 @@ just_fix_windows_console()
 
 class Proem:
     """
-    A class to create a banner for a command line application.
+    A class to create a banner of information for a command line application.
 
     :app_nm: The name of the application.
     :flavor_text: (optional) A short description of the application.
