@@ -4,7 +4,7 @@ from colorama import Fore, just_fix_windows_console
 
 just_fix_windows_console()
 
-class Banner:
+class Proem:
     """
     A class to create a banner for a command line application.
 
@@ -12,10 +12,10 @@ class Banner:
     :flavor_text: (optional) A short description of the application.
     :version: (optional) The version of the application.
     :repo_url: (optional) The URL to the repository for the application.
-    :width: (optional) The width of the banner.
-    :border_char: (optional) The character used to create the border.
-    :border_color: (optional) The color of the border.
-    :description: (optional) A long description of the application.
+    :width: (optional) The width of the banner. (default is ``80``)
+    :border_char: (optional) The character used to create the border. (default is ``#``)
+    :border_color: (optional) The color of the border. (default is ``magenta``)
+    :description: (optional) A long description of the application. (default is ``None``)
     """
 
     def __init__(
@@ -37,8 +37,6 @@ class Banner:
         self.border_char = border_char
         self.border_color = border_color
         self.description = description
-
-        self.empty_width = width - 2
 
     def _str_to_color(self) -> str:
         color_name = self.border_color.lower()
@@ -63,7 +61,7 @@ class Banner:
         return self._str_to_color() + self.border_char * self.width + Fore.RESET + '\n'
 
     def _empty_line(self):
-        return self._border_char() + ' ' * self.empty_width + self.border_char + Fore.RESET + '\n'
+        return self._border_char() + ' ' * self._empty_width + self._border_char() + Fore.RESET + '\n'
 
     def _side_widths(self, text: str):
         text_len = len(text)
@@ -124,6 +122,23 @@ class Banner:
 
         return text_line
 
+    def _find_max_width(self) -> int:
+        """
+        Find the maximum width of the banner.
+        """
+        max_width = len(self.app_nm)
+
+        if self.flavor_text:
+            max_width = max(max_width, len(self.flavor_text))
+
+        if self.repo_url:
+            max_width = max(max_width, len(self.repo_url))
+
+        if self.version:
+            max_width = max(max_width, len('version ' + self.version))
+
+        return max_width
+
     @property
     def width(self) -> int:
         """
@@ -134,7 +149,7 @@ class Banner:
     @width.setter
     def width(self, width: int):
         self._width = width
-        self.empty_width = width - 2
+        self._empty_width = width - 2
 
     def build(self) -> str:
         """
