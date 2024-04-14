@@ -1,5 +1,5 @@
-# banner
+# proem
 
-Python class to create a banner for command line applications.
+Python class to create a block of information on a command line application.
 
 # Examples
