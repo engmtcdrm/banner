@@ -1,7 +1,9 @@
 """
-A class to create a banner of information for a command line application.
+A class to create a proem of information for a command line application.
 """
 import math
+import os
+import logging
 
 from colorama import Fore, just_fix_windows_console
 
@@ -9,13 +11,13 @@ just_fix_windows_console()
 
 class Proem:
     """
-    A class to create a banner of information for a command line application.
+    A class to create a proem of information for a command line application.
 
     :app_nm: The name of the application.
     :flavor_text: (optional) A short description of the application.
     :version: (optional) The version of the application.
     :repo_url: (optional) The URL to the repository for the application.
-    :width: (optional) The width of the banner. (default is ``80``)
+    :width: (optional) The width of the proem. If set to 0 or below, width will be set to the terminal width. (default is ``80``)
     :border_char: (optional) The character used to create the border. (default is ``#``)
     :border_color: (optional) The color of the border. (default is ``magenta``)
     :description: (optional) A long description of the application. (default is ``None``)
@@ -66,55 +68,34 @@ class Proem:
     def _empty_line(self):
         return self._border_char() + ' ' * self._empty_width + self._border_char() + Fore.RESET + '\n'
 
-    def _side_widths(self, text: str):
-        text_len = len(text)
-
-        left_width = int((self.width - text_len - 2) / 2)
-        right_width = left_width
-
-        if (self.width - text_len - 2) % 2:
-            right_width += 1
-
-        return (left_width, right_width)
-
     def _wrap_text_left(self, text: str) -> str:
-        right_width = self.width - len(text) - 3
-        right_pad = ' ' * right_width
-
-        left_text = self._border_char() + ' ' + text + right_pad + self._border_char() + '\n'
-
-        return left_text
+        return self._border_char() + ' ' + text.ljust(self._empty_width - 1) + self._border_char() + '\n'
 
     def _wrap_text_center(self, text: str) -> str:
-        left_width, right_width = self._side_widths(text)
-        left_pad = ' ' * left_width
-        right_pad = ' ' * right_width
-
-        return self._border_char() + left_pad + text + right_pad + self._border_char() + '\n'
+        return self._border_char() + text.center(self._empty_width) + self._border_char() + '\n'
 
     def _wrap_text_right(self, text: str) -> str:
-        left_width = self.width - len(text) - 3
-        left_pad = ' ' * left_width
-
-        right_text = self._border_char() + left_pad + text + ' ' + self._border_char() + '\n'
-
-        return right_text
+        return self._border_char() + text.rjust(self._empty_width - 1) + ' ' + self._border_char() + '\n'
 
     def _text_line(self, text: str, align: str = 'center'):
-
         pad_width = self.width - 4
 
+        # Calculate the number of chunks the text will be split into.
         chunks = math.ceil(len(text) / pad_width)
 
         text_line = ''
 
+        # Determine the alignment method to use.
         if align == 'center':
             method = self._wrap_text_center
+        elif align == 'left':
+            method = self._wrap_text_left
         elif align == 'right':
             method = self._wrap_text_right
         else:
-            method = self._wrap_text_left
+            raise ValueError("align must be 'center', 'left', or 'right'")
 
+        # Split the text into chunks and apply the alignment method to each chunk.
         for x in range(chunks):
             if x == 0:
                 text_line += method(text[0:pad_width])
@@ -126,9 +107,6 @@ class Proem:
         return text_line
 
     def _find_max_width(self) -> int:
-        """
-        Find the maximum width of the banner.
-        """
         max_width = len(self.app_nm)
 
         if self.flavor_text:
@@ -145,42 +123,57 @@ class Proem:
     @property
     def width(self) -> int:
         """
-        The width of the banner.
+        The width of the proem.
         """
         return self._width
 
     @width.setter
     def width(self, width: int):
-        self._width = width
-        self._empty_width = width - 2
+        """
+        Set the width of the proem.
+        """
+        max_width = self._find_max_width() + 4
+
+        try:
+            if width <= 0:
+                self._width = os.get_terminal_size().columns
+            elif width < max_width:
+                self._width = max_width
+                logging.warning('Width is less than proem text. Setting to max width of proem text.')
+            else:
+                self._width = min(width, os.get_terminal_size().columns)
+        except OSError:
+            self._width = width
+
+        self._empty_width = self._width - 2
 
     def build(self) -> str:
         """
-        Build the banner text.
+        Build the proem text.
+
+        :return: The proem text.
         """
-        banner_text = self._border_line()
-        banner_text += self._empty_line()
-        banner_text += self._text_line(self.app_nm)
+        proem_text = self._border_line()
+        proem_text += self._text_line(self.app_nm)
 
         if self.flavor_text:
-            banner_text += self._text_line(self.flavor_text)
-
-        if self.repo_url:
-            banner_text += self._empty_line()
-            banner_text += self._text_line(self.repo_url)
+            proem_text += self._text_line(self.flavor_text)
 
         if self.version:
-            banner_text += self._empty_line()
-            banner_text += self._text_line('version ' + self.version)
+            proem_text += self._empty_line()
+            proem_text += self._text_line(self.version)
+
+        if self.repo_url:
+            proem_text += self._empty_line()
+            proem_text += self._text_line(self.repo_url)
 
         if self.description:
-            banner_text += self._empty_line()
-            banner_text += self._text_line(self.description, align="left")
+            proem_text += self._empty_line()
+            proem_text += self._text_line(self.description, align="left")
 
-        banner_text += self._empty_line()
-        banner_text += self._border_line()
+        proem_text += self._border_line()
 
-        return banner_text
+        return proem_text
 
     def __str__(self):
         return self.build()
