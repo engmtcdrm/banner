@@ -1,9 +1,10 @@
 from contextlib import nullcontext as does_not_raise
+import os
+
 import pytest
-from json import JSONDecodeError
+
 # from contextlib import nullcontext as does_not_raise
 from src.proem import Proem
-import os
 
 @pytest.mark.parametrize('app_nm, flavor_text, version, repo_url, width, border_char, border_color, description, expected_build_text, expected_except', [
     ("test-app", None, None, None, 1, '#', 'magenta', None, '', pytest.raises(AssertionError)),
