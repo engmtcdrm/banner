@@ -52,6 +52,8 @@ template = {
     (template | {'flavor_text': 'A test application', 'version': 'v1.0.0', 'repo_url': 'https://github.com', 'border_char': '**',  'description': 'A long description'}, does_not_raise()),
     # test border_color = red
     (template | {'border_color': 'red'}, does_not_raise()),
+    # test border_color that is not supported
+    (template | {'border_color': 'notasupportedcolor'}, does_not_raise()),
 ])
 
 def test_build_func(class_args, expected_except):
@@ -71,7 +73,7 @@ def test_build_func(class_args, expected_except):
 
         build_text = p.build()
 
-        color = Fore.MAGENTA
+        color = ''
 
         if class_args['border_color'] == 'magenta':
             color = Fore.MAGENTA
