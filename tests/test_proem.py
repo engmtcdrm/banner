@@ -44,9 +44,9 @@ template = {
     (template | {'width': 0}, does_not_raise()),
     # test width of 1000
     (template | {'width': 1000}, does_not_raise()),
-    # test border_char = *
+    # test different border_char = *
     (template | {'border_char': '*'}, does_not_raise()),
-    # test border_char = *
+    # test multiple border_char = **
     (template | {'border_char': '**'}, does_not_raise()),
     # test app_nm, flavor_text, version, repo_url, description, and description_align = center
     (template | {'flavor_text': 'A test application', 'version': 'v1.0.0', 'repo_url': 'https://github.com', 'border_char': '**',  'description': 'A long description'}, does_not_raise()),
@@ -54,6 +54,8 @@ template = {
     (template | {'border_color': 'red'}, does_not_raise()),
     # test border_color that is not supported
     (template | {'border_color': 'notasupportedcolor'}, does_not_raise()),
+    # test bad description
+    (template | {'description': 'A long description', 'description_align': 'bad'}, pytest.raises(ValueError)),
 ])
 
 def test_build_func(class_args, expected_except):
@@ -123,3 +125,10 @@ def test_build_func(class_args, expected_except):
         print(expected_build_text)
 
         assert build_text == expected_build_text
+
+def test_bad_align():
+    """Test Proem _text_line function with bad align."""
+    with pytest.raises(ValueError):
+        p = Proem('test-app')
+
+        p._text_line('test', 'bad_align') # pylint: disable=protected-access
