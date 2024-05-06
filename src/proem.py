@@ -21,6 +21,7 @@ class Proem:
     :border_char: (optional) The character used to create the border. (default is ``#``)
     :border_color: (optional) The color of the border. (default is ``magenta``)
     :description: (optional) A long description of the application. (default is ``None``)
+    :description_align: (optional) The alignment of the description text. Must be ``left``, ``center``, or ``right``. (default is ``left``)
     """
 
     def __init__(
@@ -32,7 +33,8 @@ class Proem:
         width: int = 80,
         border_char: str = "#",
         border_color: str = "magenta",
-        description: str = None
+        description: str = None,
+        description_align: str = 'left'
     ):
         self.app_nm = app_nm
         self.flavor_text = flavor_text
@@ -42,6 +44,7 @@ class Proem:
         self.border_char = border_char
         self.border_color = border_color
         self.description = description
+        self.description_align = description_align
 
     def _str_to_color(self) -> str:
         color_name = self.border_color.lower()
@@ -66,16 +69,16 @@ class Proem:
         return self._str_to_color() + self.border_char * self.width + Fore.RESET + '\n'
 
     def _empty_line(self):
-        return self._border_char() + ' ' * self._empty_width + self._border_char() + Fore.RESET + '\n'
+        return self._border_char() + ' ' * self._empty_width * len(self.border_char) + self._border_char() + '\n'
 
     def _wrap_text_left(self, text: str) -> str:
-        return self._border_char() + ' ' + text.ljust(self._empty_width - 1) + self._border_char() + '\n'
+        return self._border_char() + ' ' + text.ljust(self._empty_width * len(self.border_char) - 1) + self._border_char() + '\n'
 
     def _wrap_text_center(self, text: str) -> str:
-        return self._border_char() + text.center(self._empty_width) + self._border_char() + '\n'
+        return self._border_char() + text.center(self._empty_width * len(self.border_char)) + self._border_char() + '\n'
 
     def _wrap_text_right(self, text: str) -> str:
-        return self._border_char() + text.rjust(self._empty_width - 1) + ' ' + self._border_char() + '\n'
+        return self._border_char() + text.rjust(self._empty_width * len(self.border_char) - 1) + ' ' + self._border_char() + '\n'
 
     def _text_line(self, text: str, align: str = 'center'):
         pad_width = self.width - 4
@@ -134,18 +137,41 @@ class Proem:
         """
         max_width = self._find_max_width() + 4
 
-        try:
-            if width <= 0:
+        if width <= 0:
+            try:
                 self._width = os.get_terminal_size().columns
-            elif width < max_width:
-                self._width = max_width
-                logging.warning('Width is less than proem text. Setting to max width of proem text.')
-            else:
+            except OSError:
+                self._width = 80
+                logging.warning('Width is less than 0. Setting to default width of 80.')
+        elif width < max_width:
+            self._width = max_width
+            logging.warning('Width is less than proem contents. Setting width to max width of proem contents which is %s.', max_width)
+        else:
+            try:
                 self._width = min(width, os.get_terminal_size().columns)
-        except OSError:
-            self._width = width
+            except OSError:
+                self._width = width
 
         self._empty_width = self._width - 2
+
+    @property
+    def description_align(self) -> str:
+        """
+        The alignment of the description text.
+        """
+        return self._description_align
+
+    @description_align.setter
+    def description_align(self, description_align: str):
+        """
+        Set the alignment of the description text.
+
+        :description_align: The alignment of the description text. Must be ``left``, ``center``, or ``right``.
+        """
+        if description_align not in ['left', 'center', 'right']:
+            raise ValueError("description_align must be 'left', 'center', or 'right'")
+
+        self._description_align = description_align
 
     def build(self) -> str:
         """
@@ -169,7 +195,7 @@ class Proem:
 
         if self.description:
             proem_text += self._empty_line()
-            proem_text += self._text_line(self.description, align="left")
+            proem_text += self._text_line(text = self.description, align = self.description_align)
 
         proem_text += self._border_line()
 
