@@ -1,5 +1,5 @@
+"""Test Proem class."""
 from contextlib import nullcontext as does_not_raise
-import os
 
 import pytest
 from colorama import Fore
@@ -55,7 +55,7 @@ template = {
 ])
 
 def test_build_func(class_args, expected_except):
-
+    """Test Proem build function."""
     with expected_except:
         p = Proem(
             class_args['app_nm'],
@@ -100,15 +100,17 @@ def test_build_func(class_args, expected_except):
 
         expected_build_text = [border]
 
+        empty_width = p.width - 2
+
         for l, a in lines:
             if l and a == 'center':
-                expected_build_text.append(sborder + l.center(p._empty_width * len(p.border_char)) + sborder)
+                expected_build_text.append(sborder + l.center(empty_width * len(p.border_char)) + sborder)
             elif l and a == 'left':
-                expected_build_text.append(sborder + ' ' + l.ljust(p._empty_width * len(p.border_char) - 1) + sborder)
+                expected_build_text.append(sborder + ' ' + l.ljust(empty_width * len(p.border_char) - 1) + sborder)
             elif l and a == 'right':
-                expected_build_text.append(sborder + l.rjust(p._empty_width * len(p.border_char) - 1) + ' ' + sborder)
+                expected_build_text.append(sborder + l.rjust(empty_width * len(p.border_char) - 1) + ' ' + sborder)
             else:
-                expected_build_text.append(sborder + ' ' * p._empty_width * len(p.border_char) + sborder)
+                expected_build_text.append(sborder + ' ' * empty_width * len(p.border_char) + sborder)
 
         expected_build_text.append(border)
 
