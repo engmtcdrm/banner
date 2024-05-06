@@ -60,13 +60,17 @@ class Proem:
             'white': Fore.WHITE
         }
 
-        return color_map.get(color_name, '')
+        set_color = color_map.get(color_name, '')
 
+        if set_color == '':
+            logging.warning('Color not supported. Setting border color to no color.')
+
+        return set_color
     def _border_char(self) -> str:
-        return self._str_to_color() + self.border_char + Fore.RESET
+        return self._border_color_str + self.border_char + Fore.RESET
 
     def _border_line(self):
-        return self._str_to_color() + self.border_char * self.width + Fore.RESET + '\n'
+        return self._border_color_str + self.border_char * self.width + Fore.RESET + '\n'
 
     def _empty_line(self):
         return self._border_char() + ' ' * self._empty_width * len(self.border_char) + self._border_char() + '\n'
@@ -172,6 +176,23 @@ class Proem:
             raise ValueError("description_align must be 'left', 'center', or 'right'")
 
         self._description_align = description_align
+
+    @property
+    def border_color(self) -> str:
+        """
+        The color of the border.
+        """
+        return self._border_color
+
+    @border_color.setter
+    def border_color(self, border_color: str):
+        """
+        Set the color of the border.
+
+        :border_color: The color of the border.
+        """
+        self._border_color = border_color
+        self._border_color_str = self._str_to_color()
 
     def build(self) -> str:
         """
